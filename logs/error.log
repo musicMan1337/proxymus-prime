@@ -1,0 +1,169 @@
+2025/08/02 03:05:36 [emerg] 1#1: dlopen() "/etc/nginx/modules/ndk_http_module.so" failed (Error loading shared library /etc/nginx/modules/ndk_http_module.so: No such file or directory) in /etc/nginx/nginx.conf:7
+2025/08/02 03:09:06 [emerg] 1#1: dlopen() "/etc/nginx/modules/ndk_http_module.so" failed (Error loading shared library /etc/nginx/modules/ndk_http_module.so: No such file or directory) in /etc/nginx/nginx.conf:7
+2025/08/02 03:10:42 [emerg] 1#1: dlopen() "/etc/nginx/modules/ndk_http_module.so" failed (Error loading shared library /etc/nginx/modules/ndk_http_module.so: No such file or directory) in /etc/nginx/nginx.conf:7
+2025/08/02 03:16:03 [emerg] 1#1: dlopen() "/etc/nginx/modules/ndk_http_module.so" failed (Error loading shared library /etc/nginx/modules/ndk_http_module.so: No such file or directory) in /etc/nginx/nginx.conf:7
+2025/08/02 22:01:58 [error] 7#7: *1 [lua] access_by_lua(nginx.conf:78):11: Failed to connect to Redis: no resolver defined to resolve "redis", client: 172.21.0.1, server: _, request: "GET / HTTP/1.1", host: "localhost"
+2025/08/02 22:05:57 [error] 7#7: *1 [lua] access_by_lua(nginx.conf:78):11: Failed to connect to Redis: no resolver defined to resolve "redis", client: 172.21.0.1, server: _, request: "GET / HTTP/1.1", host: "localhost"
+2025/08/02 22:06:12 [error] 8#8: *3 [lua] access_by_lua(nginx.conf:78):11: Failed to connect to Redis: no resolver defined to resolve "redis", client: 172.21.0.1, server: _, request: "GET / HTTP/1.1", host: "localhost"
+2025/08/02 22:06:15 [error] 8#8: *3 [lua] access_by_lua(nginx.conf:78):11: Failed to connect to Redis: no resolver defined to resolve "redis", client: 172.21.0.1, server: _, request: "GET / HTTP/1.1", host: "localhost"
+2025/08/02 22:06:16 [error] 8#8: *3 [lua] access_by_lua(nginx.conf:78):11: Failed to connect to Redis: no resolver defined to resolve "redis", client: 172.21.0.1, server: _, request: "GET / HTTP/1.1", host: "localhost"
+2025/08/02 22:06:17 [error] 8#8: *3 [lua] access_by_lua(nginx.conf:78):11: Failed to connect to Redis: no resolver defined to resolve "redis", client: 172.21.0.1, server: _, request: "GET / HTTP/1.1", host: "localhost"
+2025/08/02 22:06:17 [error] 8#8: *3 [lua] access_by_lua(nginx.conf:78):11: Failed to connect to Redis: no resolver defined to resolve "redis", client: 172.21.0.1, server: _, request: "GET / HTTP/1.1", host: "localhost"
+2025/08/02 22:06:18 [error] 8#8: *3 [lua] access_by_lua(nginx.conf:78):11: Failed to connect to Redis: no resolver defined to resolve "redis", client: 172.21.0.1, server: _, request: "GET / HTTP/1.1", host: "localhost"
+2025/08/02 22:06:33 [error] 8#8: *3 [lua] session_manager.lua:13: connect_redis(): Failed to connect to Redis: no resolver defined to resolve "redis", client: 172.21.0.1, server: _, request: "GET /session HTTP/1.1", host: "localhost"
+2025/08/03 00:18:45 [error] 7#7: *1 lua entry thread aborted: runtime error: /etc/nginx/lua/access_handler.lua:2: module 'redis_client' not found:
+	no field package.preload['redis_client']
+	no file '/usr/local/openresty/site/lualib/redis_client.ljbc'
+	no file '/usr/local/openresty/site/lualib/redis_client/init.ljbc'
+	no file '/usr/local/openresty/lualib/redis_client.ljbc'
+	no file '/usr/local/openresty/lualib/redis_client/init.ljbc'
+	no file '/usr/local/openresty/site/lualib/redis_client.lua'
+	no file '/usr/local/openresty/site/lualib/redis_client/init.lua'
+	no file '/usr/local/openresty/lualib/redis_client.lua'
+	no file '/usr/local/openresty/lualib/redis_client/init.lua'
+	no file './redis_client.lua'
+	no file '/usr/local/openresty/luajit/share/luajit-2.1/redis_client.lua'
+	no file '/usr/local/share/lua/5.1/redis_client.lua'
+	no file '/usr/local/share/lua/5.1/redis_client/init.lua'
+	no file '/usr/local/openresty/luajit/share/lua/5.1/redis_client.lua'
+	no file '/usr/local/openresty/luajit/share/lua/5.1/redis_client/init.lua'
+	no file '/usr/local/openresty/site/lualib/redis_client.so'
+	no file '/usr/local/openresty/lualib/redis_client.so'
+	no file './redis_client.so'
+	no file '/usr/local/lib/lua/5.1/redis_client.so'
+	no file '/usr/local/openresty/luajit/lib/lua/5.1/redis_client.so'
+	no file '/usr/local/lib/lua/5.1/loadall.so'
+stack traceback:
+coroutine 0:
+	[C]: in function 'require'
+	/etc/nginx/lua/access_handler.lua:2: in main chunk, client: 172.21.0.1, server: _, request: "GET / HTTP/1.1", host: "localhost"
+2025/08/03 00:18:51 [error] 8#8: *2 lua entry thread aborted: runtime error: /etc/nginx/lua/access_handler.lua:2: module 'redis_client' not found:
+	no field package.preload['redis_client']
+	no file '/usr/local/openresty/site/lualib/redis_client.ljbc'
+	no file '/usr/local/openresty/site/lualib/redis_client/init.ljbc'
+	no file '/usr/local/openresty/lualib/redis_client.ljbc'
+	no file '/usr/local/openresty/lualib/redis_client/init.ljbc'
+	no file '/usr/local/openresty/site/lualib/redis_client.lua'
+	no file '/usr/local/openresty/site/lualib/redis_client/init.lua'
+	no file '/usr/local/openresty/lualib/redis_client.lua'
+	no file '/usr/local/openresty/lualib/redis_client/init.lua'
+	no file './redis_client.lua'
+	no file '/usr/local/openresty/luajit/share/luajit-2.1/redis_client.lua'
+	no file '/usr/local/share/lua/5.1/redis_client.lua'
+	no file '/usr/local/share/lua/5.1/redis_client/init.lua'
+	no file '/usr/local/openresty/luajit/share/lua/5.1/redis_client.lua'
+	no file '/usr/local/openresty/luajit/share/lua/5.1/redis_client/init.lua'
+	no file '/usr/local/openresty/site/lualib/redis_client.so'
+	no file '/usr/local/openresty/lualib/redis_client.so'
+	no file './redis_client.so'
+	no file '/usr/local/lib/lua/5.1/redis_client.so'
+	no file '/usr/local/openresty/luajit/lib/lua/5.1/redis_client.so'
+	no file '/usr/local/lib/lua/5.1/loadall.so'
+stack traceback:
+coroutine 0:
+	[C]: in function 'require'
+	/etc/nginx/lua/access_handler.lua:2: in main chunk, client: 172.21.0.1, server: _, request: "GET / HTTP/1.1", host: "localhost"
+2025/08/03 00:19:56 [error] 7#7: *1 lua entry thread aborted: runtime error: /etc/nginx/lua/access_handler.lua:2: module 'redis_client' not found:
+	no field package.preload['redis_client']
+	no file '/usr/local/openresty/site/lualib/redis_client.ljbc'
+	no file '/usr/local/openresty/site/lualib/redis_client/init.ljbc'
+	no file '/usr/local/openresty/lualib/redis_client.ljbc'
+	no file '/usr/local/openresty/lualib/redis_client/init.ljbc'
+	no file '/usr/local/openresty/site/lualib/redis_client.lua'
+	no file '/usr/local/openresty/site/lualib/redis_client/init.lua'
+	no file '/usr/local/openresty/lualib/redis_client.lua'
+	no file '/usr/local/openresty/lualib/redis_client/init.lua'
+	no file './redis_client.lua'
+	no file '/usr/local/openresty/luajit/share/luajit-2.1/redis_client.lua'
+	no file '/usr/local/share/lua/5.1/redis_client.lua'
+	no file '/usr/local/share/lua/5.1/redis_client/init.lua'
+	no file '/usr/local/openresty/luajit/share/lua/5.1/redis_client.lua'
+	no file '/usr/local/openresty/luajit/share/lua/5.1/redis_client/init.lua'
+	no file '/usr/local/openresty/site/lualib/redis_client.so'
+	no file '/usr/local/openresty/lualib/redis_client.so'
+	no file './redis_client.so'
+	no file '/usr/local/lib/lua/5.1/redis_client.so'
+	no file '/usr/local/openresty/luajit/lib/lua/5.1/redis_client.so'
+	no file '/usr/local/lib/lua/5.1/loadall.so'
+stack traceback:
+coroutine 0:
+	[C]: in function 'require'
+	/etc/nginx/lua/access_handler.lua:2: in main chunk, client: 172.21.0.1, server: _, request: "GET / HTTP/1.1", host: "localhost"
+2025/08/03 00:23:45 [error] 7#7: *1 lua entry thread aborted: runtime error: /etc/nginx/lua/access_handler.lua:2: module 'redis_client' not found:
+	no field package.preload['redis_client']
+	no file '/usr/local/openresty/site/lualib/redis_client.ljbc'
+	no file '/usr/local/openresty/site/lualib/redis_client/init.ljbc'
+	no file '/usr/local/openresty/lualib/redis_client.ljbc'
+	no file '/usr/local/openresty/lualib/redis_client/init.ljbc'
+	no file '/usr/local/openresty/site/lualib/redis_client.lua'
+	no file '/usr/local/openresty/site/lualib/redis_client/init.lua'
+	no file '/usr/local/openresty/lualib/redis_client.lua'
+	no file '/usr/local/openresty/lualib/redis_client/init.lua'
+	no file './redis_client.lua'
+	no file '/usr/local/openresty/luajit/share/luajit-2.1/redis_client.lua'
+	no file '/usr/local/share/lua/5.1/redis_client.lua'
+	no file '/usr/local/share/lua/5.1/redis_client/init.lua'
+	no file '/usr/local/openresty/luajit/share/lua/5.1/redis_client.lua'
+	no file '/usr/local/openresty/luajit/share/lua/5.1/redis_client/init.lua'
+	no file '/usr/local/openresty/site/lualib/redis_client.so'
+	no file '/usr/local/openresty/lualib/redis_client.so'
+	no file './redis_client.so'
+	no file '/usr/local/lib/lua/5.1/redis_client.so'
+	no file '/usr/local/openresty/luajit/lib/lua/5.1/redis_client.so'
+	no file '/usr/local/lib/lua/5.1/loadall.so'
+stack traceback:
+coroutine 0:
+	[C]: in function 'require'
+	/etc/nginx/lua/access_handler.lua:2: in main chunk, client: 172.21.0.1, server: _, request: "GET / HTTP/1.1", host: "localhost"
+2025/08/03 00:23:46 [error] 8#8: *2 lua entry thread aborted: runtime error: /etc/nginx/lua/access_handler.lua:2: module 'redis_client' not found:
+	no field package.preload['redis_client']
+	no file '/usr/local/openresty/site/lualib/redis_client.ljbc'
+	no file '/usr/local/openresty/site/lualib/redis_client/init.ljbc'
+	no file '/usr/local/openresty/lualib/redis_client.ljbc'
+	no file '/usr/local/openresty/lualib/redis_client/init.ljbc'
+	no file '/usr/local/openresty/site/lualib/redis_client.lua'
+	no file '/usr/local/openresty/site/lualib/redis_client/init.lua'
+	no file '/usr/local/openresty/lualib/redis_client.lua'
+	no file '/usr/local/openresty/lualib/redis_client/init.lua'
+	no file './redis_client.lua'
+	no file '/usr/local/openresty/luajit/share/luajit-2.1/redis_client.lua'
+	no file '/usr/local/share/lua/5.1/redis_client.lua'
+	no file '/usr/local/share/lua/5.1/redis_client/init.lua'
+	no file '/usr/local/openresty/luajit/share/lua/5.1/redis_client.lua'
+	no file '/usr/local/openresty/luajit/share/lua/5.1/redis_client/init.lua'
+	no file '/usr/local/openresty/site/lualib/redis_client.so'
+	no file '/usr/local/openresty/lualib/redis_client.so'
+	no file './redis_client.so'
+	no file '/usr/local/lib/lua/5.1/redis_client.so'
+	no file '/usr/local/openresty/luajit/lib/lua/5.1/redis_client.so'
+	no file '/usr/local/lib/lua/5.1/loadall.so'
+stack traceback:
+coroutine 0:
+	[C]: in function 'require'
+	/etc/nginx/lua/access_handler.lua:2: in main chunk, client: 172.21.0.1, server: _, request: "GET / HTTP/1.1", host: "localhost"
+2025/08/03 00:23:48 [error] 9#9: *3 lua entry thread aborted: runtime error: /etc/nginx/lua/access_handler.lua:2: module 'redis_client' not found:
+	no field package.preload['redis_client']
+	no file '/usr/local/openresty/site/lualib/redis_client.ljbc'
+	no file '/usr/local/openresty/site/lualib/redis_client/init.ljbc'
+	no file '/usr/local/openresty/lualib/redis_client.ljbc'
+	no file '/usr/local/openresty/lualib/redis_client/init.ljbc'
+	no file '/usr/local/openresty/site/lualib/redis_client.lua'
+	no file '/usr/local/openresty/site/lualib/redis_client/init.lua'
+	no file '/usr/local/openresty/lualib/redis_client.lua'
+	no file '/usr/local/openresty/lualib/redis_client/init.lua'
+	no file './redis_client.lua'
+	no file '/usr/local/openresty/luajit/share/luajit-2.1/redis_client.lua'
+	no file '/usr/local/share/lua/5.1/redis_client.lua'
+	no file '/usr/local/share/lua/5.1/redis_client/init.lua'
+	no file '/usr/local/openresty/luajit/share/lua/5.1/redis_client.lua'
+	no file '/usr/local/openresty/luajit/share/lua/5.1/redis_client/init.lua'
+	no file '/usr/local/openresty/site/lualib/redis_client.so'
+	no file '/usr/local/openresty/lualib/redis_client.so'
+	no file './redis_client.so'
+	no file '/usr/local/lib/lua/5.1/redis_client.so'
+	no file '/usr/local/openresty/luajit/lib/lua/5.1/redis_client.so'
+	no file '/usr/local/lib/lua/5.1/loadall.so'
+stack traceback:
+coroutine 0:
+	[C]: in function 'require'
+	/etc/nginx/lua/access_handler.lua:2: in main chunk, client: 172.21.0.1, server: _, request: "GET / HTTP/1.1", host: "localhost"

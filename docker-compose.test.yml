@@ -1,0 +1,44 @@
+services:
+  # Example backend servers (for testing)
+  backend1:
+    image: php:8.2-apache
+    container_name: backend_server_1
+    ports:
+      - "8081:80"
+    volumes:
+      - ./backend:/var/www/html
+    networks:
+      - proxy_network
+    environment:
+      - SERVER_ID=server1
+      - REDIS_HOST=redis
+
+  backend2:
+    image: php:8.2-apache
+    container_name: backend_server_2
+    ports:
+      - "8082:80"
+    volumes:
+      - ./backend:/var/www/html
+    networks:
+      - proxy_network
+    environment:
+      - SERVER_ID=server2
+      - REDIS_HOST=redis
+
+  backend3:
+    image: php:8.2-apache
+    container_name: backend_server_3
+    ports:
+      - "8083:80"
+    volumes:
+      - ./backend:/var/www/html
+    networks:
+      - proxy_network
+    environment:
+      - SERVER_ID=server3
+      - REDIS_HOST=redis
+
+networks:
+  proxy_network:
+    external: true

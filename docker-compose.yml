@@ -1,0 +1,39 @@
+services:
+  # Redis for session storage
+  redis:
+    image: redis:7-alpine
+    container_name: proxy_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - proxy_network
+
+  # NGINX Load Balancer/Proxy
+  nginx_proxy:
+    image: openresty/openresty:alpine
+    container_name: nginx_proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/lua:/etc/nginx/lua
+      - ./logs:/var/log/nginx
+    depends_on:
+      - redis
+    networks:
+      - proxy_network
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+volumes:
+  redis_data:
+
+networks:
+  proxy_network:
+    driver: bridge
