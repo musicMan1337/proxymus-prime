@@ -20,6 +20,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+      - ./nginx/servers.conf:/etc/nginx/servers.conf
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./nginx/lua:/etc/nginx/lua
       - ./logs:/var/log/nginx
