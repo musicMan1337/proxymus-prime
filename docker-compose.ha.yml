@@ -1,0 +1,31 @@
+services:
+  # Redis Sentinel - monitors Redis health
+  redis_sentinel:
+    image: redis:7-alpine
+    container_name: redis_sentinel
+    ports:
+      - "26379:26379"
+    volumes:
+      - ./redis/sentinel.conf:/etc/redis/sentinel.conf
+    command: redis-sentinel /etc/redis/sentinel.conf
+    networks:
+      - proxy_network
+    depends_on:
+      - redis
+
+  # Keepalived - manages VIP
+  keepalived:
+    image: osixia/keepalived:2.0.20
+    container_name: keepalived
+    cap_add:
+      - NET_ADMIN
+    network_mode: host
+    volumes:
+      - ./keepalived/keepalived.conf:/container/service/keepalived/assets/keepalived.conf
+    environment:
+      - KEEPALIVED_INTERFACE=eth0
+      - KEEPALIVED_VIRTUAL_IPS=192.168.1.100
+
+networks:
+  proxy_network:
+    external: true

@@ -14,8 +14,14 @@ if [ "$VERSION" = "test" ]; then
     VERSION="latest"
     COMPOSE_FILE="-f docker-compose.yml -f docker-compose.test.yml"
     CURRENT_SERVERS=("${TEST_SERVERS[@]}")
+elif [ "$VERSION" = "ha" ]; then
+    IS_HA=true
+    VERSION="latest"
+    COMPOSE_FILE="-f docker-compose.yml -f docker-compose.ha.yml"
+    CURRENT_SERVERS=("${SERVERS[@]}")
 else
     IS_TEST=false
+    IS_HA=false
     COMPOSE_FILE="-f docker-compose.yml"
     CURRENT_SERVERS=("${SERVERS[@]}")
 fi
@@ -44,6 +50,31 @@ check_health() {
 
     log "ERROR: $server failed health check"
     return 1
+}
+
+check_ha_services() {
+    log "Checking HA services..."
+
+    # Check Redis Sentinel
+    if ! docker-compose $COMPOSE_FILE ps redis_sentinel | grep -q "Up"; then
+        log "WARNING: Redis Sentinel is not running"
+        return 1
+    fi
+
+    # Check Keepalived
+    if ! docker-compose $COMPOSE_FILE ps keepalived | grep -q "Up"; then
+        log "WARNING: Keepalived is not running"
+        return 1
+    fi
+
+    # Check Sentinel can see Redis
+    if ! docker-compose $COMPOSE_FILE exec -T redis_sentinel redis-cli -p 26379 sentinel masters >/dev/null 2>&1; then
+        log "WARNING: Sentinel cannot communicate with Redis"
+        return 1
+    fi
+
+    log "✓ All HA services are healthy"
+    return 0
 }
 
 remove_from_load_balancer() {
@@ -141,28 +172,72 @@ main() {
             docker network create proxy_network
         fi
 
-        # Start the entire test environment including load balancer and redis
-        log "Starting complete test environment (redis, nginx_proxy, test servers)..."
+        # Start the entire test environment
+        log "Starting complete test environment..."
         docker-compose $COMPOSE_FILE up -d
 
-        # Wait longer for all services to initialize
+        # Wait for services to initialize
         log "Waiting for services to initialize..."
         sleep 30
 
-        # Verify critical services are running
+        # Verify critical services
         if ! docker-compose $COMPOSE_FILE ps redis | grep -q "Up"; then
             log "ERROR: Redis is not running"
             exit 1
         fi
 
-        # Check nginx_proxy status and logs if it's not running
         if ! docker-compose $COMPOSE_FILE ps nginx_proxy | grep -q "Up"; then
             log "ERROR: nginx_proxy is not running. Checking logs..."
             docker-compose $COMPOSE_FILE logs nginx_proxy
             exit 1
         fi
 
-        log "All core services (redis, nginx_proxy) are running"
+        log "All core services are running"
+
+    elif [ "$IS_HA" = true ]; then
+        log "Starting HA deployment with high availability services"
+
+        # Create proxy network if it doesn't exist
+        if ! docker network ls | grep -q proxy_network; then
+            log "Creating proxy_network..."
+            docker network create proxy_network
+        fi
+
+        # Check if keepalived.conf exists
+        if [ ! -f "keepalived/keepalived.conf" ]; then
+            log "ERROR: keepalived/keepalived.conf not found"
+            log "Please copy keepalived/keepalived.conf.example to keepalived/keepalived.conf and configure it"
+            exit 1
+        fi
+
+        # Start HA environment
+        log "Starting HA environment (redis, nginx_proxy, sentinel, keepalived)..."
+        docker-compose $COMPOSE_FILE up -d
+
+        # Wait longer for HA services to initialize
+        log "Waiting for HA services to initialize..."
+        sleep 45
+
+        # Verify core services
+        if ! docker-compose $COMPOSE_FILE ps redis | grep -q "Up"; then
+            log "ERROR: Redis is not running"
+            exit 1
+        fi
+
+        if ! docker-compose $COMPOSE_FILE ps nginx_proxy | grep -q "Up"; then
+            log "ERROR: nginx_proxy is not running. Checking logs..."
+            docker-compose $COMPOSE_FILE logs nginx_proxy
+            exit 1
+        fi
+
+        # Check HA services
+        if ! check_ha_services; then
+            log "ERROR: HA services are not healthy"
+            exit 1
+        fi
+
+        log "All HA services are running and healthy"
+
     else
         log "Starting rolling deployment with version: $VERSION"
     fi
@@ -173,31 +248,42 @@ main() {
         exit 1
     fi
 
-    # Update each server
-    for server in "${CURRENT_SERVERS[@]}"; do
-        log "=== Updating $server ==="
+    # Update each server (skip for HA setup mode)
+    if [ "$IS_HA" != true ]; then
+        for server in "${CURRENT_SERVERS[@]}"; do
+            log "=== Updating $server ==="
 
-        if update_server $server; then
-            log "$server update completed successfully"
-            # Wait before next server
-            sleep 30
-        else
-            log "ERROR: Failed to update $server. Stopping deployment."
-            exit 1
-        fi
-    done
+            if update_server $server; then
+                log "$server update completed successfully"
+                sleep 30
+            else
+                log "ERROR: Failed to update $server. Stopping deployment."
+                exit 1
+            fi
+        done
+    fi
 
+    # Final status
     if [ "$IS_TEST" = true ]; then
         log "=== Test deployment completed successfully ==="
         log "Test environment is running:"
         log "- Load balancer: http://localhost"
         log "- Redis: localhost:6379"
         log "- Direct test server access:"
-        log "  - backend1: http://localhost:9081"
-        log "  - backend2: http://localhost:9082"
-        log "  - backend3: http://localhost:9083"
+        log "  - backend1: http://localhost:8081"
+        log "  - backend2: http://localhost:8082"
+        log "  - backend3: http://localhost:8083"
         log ""
         log "Run 'docker-compose -f docker-compose.yml -f docker-compose.test.yml down' to cleanup"
+    elif [ "$IS_HA" = true ]; then
+        log "=== HA deployment completed successfully ==="
+        log "High Availability environment is running:"
+        log "- Load balancer: http://localhost (and VIP if configured)"
+        log "- Redis: localhost:6379"
+        log "- Redis Sentinel: localhost:26379"
+        log "- HA Status: docker-compose -f docker-compose.yml -f docker-compose.ha.yml ps"
+        log ""
+        log "Run 'docker-compose -f docker-compose.yml -f docker-compose.ha.yml down' to cleanup"
     else
         log "=== Deployment completed successfully ==="
         log "All servers have been updated to version: $VERSION"
@@ -210,6 +296,7 @@ if [ "$#" -eq 0 ]; then
     echo "Examples:"
     echo "  $0 v25.01.001    # Production deployment"
     echo "  $0 test          # Test deployment using test servers"
+    echo "  $0 ha            # HA deployment with sentinel and keepalived"
     exit 1
 fi
 

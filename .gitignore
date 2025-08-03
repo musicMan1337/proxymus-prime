@@ -1,3 +1,4 @@
 # Ignore server configuration (environment-specific)
 nginx/servers.conf
 logs/
+keepalived/keepalived.conf
