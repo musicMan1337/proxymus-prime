@@ -6,3 +6,6 @@ keepalived/keepalived.conf
 redis/dump.rdb
 redis/appendonly.aof
 cookies*
+__pycache__
+tests/report.html
+ssl/
