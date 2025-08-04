@@ -1,4 +1,7 @@
-# Ignore server configuration (environment-specific)
+# Environment and secrets
+.env
 nginx/servers.conf
 logs/
 keepalived/keepalived.conf
+redis/dump.rdb
+redis/appendonly.aof

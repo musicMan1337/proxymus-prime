@@ -12,7 +12,9 @@ if new_session_data then
 
     local ok = red:connect(redis_host, redis_port)
     if ok then
-        -- Update session in Redis with TTL (24 hours)
+        -- Authenticate with Redis
+        red:auth(os.getenv("REDIS_PASSWORD"))
+
         red:setex("session:" .. session_id, 86400, new_session_data)
         red:close()
     end

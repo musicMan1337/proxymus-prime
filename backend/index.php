@@ -71,6 +71,12 @@ switch ($path) {
         break;
 }
 
+function generateSecureSessionId()
+{
+    // Use cryptographically secure random bytes
+    return bin2hex(random_bytes(32)); // 64 character hex string
+}
+
 function handleSession($sessionId, $session, $serverId, $redisHost)
 {
     global $method;
@@ -111,15 +117,19 @@ function handleSession($sessionId, $session, $serverId, $redisHost)
 
 function handleLogin($sessionId, $serverId, $redisHost)
 {
-    $input = json_decode(file_get_contents('php://input'), true);
-    $username = $input['username'] ?? '';
-    $password = $input['password'] ?? '';
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? '';
 
-    // Simple authentication (in real app, check against database)
     if ($username && $password) {
         if (!$sessionId) {
-            $sessionId = md5(uniqid(rand(), true));
-            setcookie('PHPSESSID', $sessionId, time() + 86400, '/');
+            $sessionId = generateSecureSessionId();
+            setcookie('PHPSESSID', $sessionId, [
+                'expires' => time() + 86400,
+                'path' => '/',
+                'secure' => isset($_SERVER['HTTPS']),
+                'httponly' => true,
+                'samesite' => 'Strict'
+            ]);
         }
 
         $sessionData = [
