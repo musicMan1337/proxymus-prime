@@ -5,3 +5,4 @@ logs/
 keepalived/keepalived.conf
 redis/dump.rdb
 redis/appendonly.aof
+cookies*

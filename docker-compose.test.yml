@@ -1,3 +1,6 @@
+include:
+  - docker-compose.yml
+
 services:
   # Example backend servers (for testing)
   backend1:
@@ -38,7 +41,3 @@ services:
     environment:
       - SERVER_ID=server3
       - REDIS_HOST=redis
-
-networks:
-  proxy_network:
-    external: true

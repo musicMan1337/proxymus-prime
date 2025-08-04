@@ -1,11 +1,14 @@
--- Simple access handler that doesn't break the proxy
+--[[
+This is the main access handler for the NGINX proxy.
+It handles lookup of session data from Redis and sets
+variables for use in requests.
+]]
 local redis = require "resty.redis"
 
 -- Initialize variables
 ngx.var.session_id = ""
 ngx.var.session_data = ""
 
--- Early returns for cleaner flow
 local red = redis:new()
 red:set_timeout(1000)
 

@@ -5,21 +5,31 @@ local cjson = require "cjson"
 -- Redis helpers
 -------------------------------------------
 local function connect_redis()
-  local red = redis:new()
-  red:set_timeout(1000) -- 1 second
+    local red = redis:new()
+    red:set_timeout(1000) -- 1 second
 
-  local ok, err = red:connect("redis", 6379)
-  if not ok then
-    ngx.log(ngx.ERR, "Failed to connect to Redis: ", err)
-    return nil, err
-  end
+    local ok, err = red:connect("redis", 6379)
+    if not ok then
+        ngx.log(ngx.ERR, "Failed to connect to Redis: ", err)
+        return nil, err
+    end
 
-  return red, nil
+    local redis_password = os.getenv("REDIS_PASSWORD")
+    if redis_password then
+        local res, err = red:auth(redis_password)
+        if not res then
+            ngx.log(ngx.ERR, "Failed to authenticate with Redis: ", err)
+            red:close()
+        return nil, err
+        end
+    end
+
+    return red, nil
 end
 
 local function generate_session_id()
-  local random = ngx.var.request_time .. ngx.var.remote_addr .. math.random(1000000)
-  return ngx.md5(random)
+    local random = ngx.var.request_time .. ngx.var.remote_addr .. math.random(1000000)
+    return ngx.md5(random)
 end
 
 -------------------------------------------
@@ -70,6 +80,8 @@ end
 
 -- POST
 local function create_session()
+    ngx.log(ngx.INFO, "Creating new session...")
+
     local session_id = generate_session_id()
     local session_data = ngx.var.request_body or "{}"
 
@@ -81,20 +93,24 @@ local function create_session()
         end
     end
 
-    local red = connect_redis()
+    local red, err = connect_redis()
     if not red then
+        ngx.log(ngx.ERR, "Redis connection failed: ", err or "unknown error")
         send_error(500, "Redis connection failed")
         return
     end
 
     -- Store session with 24 hour TTL
-    local ok = red:setex("session:" .. session_id, 86400, session_data)
-    red:close()
-
+    ngx.log(ngx.INFO, "Storing session: ", session_id)
+    local ok, err = red:setex("session:" .. session_id, 86400, session_data)
     if not ok then
+        ngx.log(ngx.ERR, "Failed to store session: ", err or "unknown error")
+        red:close()
         send_error(500, "Failed to create session")
         return
     end
+
+    red:close()
 
     send_success({
         session_id = session_id,

@@ -1,3 +1,6 @@
+include:
+  - docker-compose.yml
+
 services:
   # Redis Sentinel - monitors Redis health
   redis_sentinel:
@@ -25,7 +28,3 @@ services:
     environment:
       - KEEPALIVED_INTERFACE=eth0
       - KEEPALIVED_VIRTUAL_IPS=192.168.1.100
-
-networks:
-  proxy_network:
-    external: true

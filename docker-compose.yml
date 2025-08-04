@@ -28,10 +28,12 @@ services:
     container_name: nginx_proxy
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
       - ./nginx/lua:/etc/nginx/lua:ro
       - ./nginx/servers.conf:/etc/nginx/servers.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
     networks:
       - proxy_network
     env_file:

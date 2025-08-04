@@ -3,6 +3,7 @@
 set -e
 
 VERSION=${1:-"latest"}
+RESTART=${2:-"false"}
 SERVERS=("backend1" "backend2" "backend3")
 TEST_SERVERS=("backend1" "backend2" "backend3")
 HEALTH_CHECK_RETRIES=10
@@ -12,12 +13,12 @@ HEALTH_CHECK_DELAY=5
 if [ "$VERSION" = "test" ]; then
     IS_TEST=true
     VERSION="latest"
-    COMPOSE_FILE="-f docker-compose.yml -f docker-compose.test.yml"
+    COMPOSE_FILE="-f docker-compose.test.yml"
     CURRENT_SERVERS=("${TEST_SERVERS[@]}")
 elif [ "$VERSION" = "ha" ]; then
     IS_HA=true
     VERSION="latest"
-    COMPOSE_FILE="-f docker-compose.yml -f docker-compose.ha.yml"
+    COMPOSE_FILE="-f docker-compose.ha.yml"
     CURRENT_SERVERS=("${SERVERS[@]}")
 else
     IS_TEST=false
@@ -29,6 +30,25 @@ fi
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
 }
+
+if [ "$RESTART" = "true" ]; then
+    log "Restarting services..."
+
+    if docker-compose $COMPOSE_FILE down; then
+        log "✓ Stopped services"
+    else
+        log "ERROR: Failed to stop services"
+        exit 1
+    fi
+
+    if docker-compose $COMPOSE_FILE up -d; then
+        log "✓ Reloaded nginx configuration"
+        exit 0
+    else
+        log "ERROR: Failed to reload nginx configuration"
+        exit 1
+    fi
+fi
 
 check_health() {
     local server=$1
