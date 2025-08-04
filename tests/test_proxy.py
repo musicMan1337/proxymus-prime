@@ -1,5 +1,6 @@
 import pytest
 import requests
+from requests.adapters import HTTPAdapter
 import json
 import time
 import random
@@ -21,7 +22,7 @@ class ProxyTestClient:
         self.session = requests.Session()
         self.session.verify = False  # Skip SSL verification for tests
         # Configure connection pooling
-        adapter = requests.adapters.HTTPAdapter(
+        adapter = HTTPAdapter(
             pool_connections=20,
             pool_maxsize=20,
             max_retries=3
