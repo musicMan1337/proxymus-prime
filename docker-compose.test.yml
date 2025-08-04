@@ -1,3 +1,5 @@
+# Test environment configuration - sets up test backends
+# Container names will need to match nginx/servers.conf for testing
 include:
   - docker-compose.yml
 

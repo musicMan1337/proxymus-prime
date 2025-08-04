@@ -259,17 +259,40 @@ main() {
         log "All HA services are running and healthy"
 
     else
-        log "Starting rolling deployment with version: $VERSION"
+        log "Starting proxy-only deployment with version: $VERSION"
+
+        # For normal deployments, only manage the proxy infrastructure
+        log "Starting proxy infrastructure..."
+        docker-compose $COMPOSE_FILE up -d --remove-orphans
+
+        # Wait for services to initialize
+        log "Waiting for proxy services to initialize..."
+        sleep 15
+
+        # Verify proxy services
+        if ! docker-compose $COMPOSE_FILE ps redis | grep -q "Up"; then
+            log "ERROR: Redis is not running"
+            exit 1
+        fi
+
+        if ! docker-compose $COMPOSE_FILE ps nginx_proxy | grep -q "Up"; then
+            log "ERROR: nginx_proxy is not running. Checking logs..."
+            docker-compose $COMPOSE_FILE logs nginx_proxy
+            exit 1
+        fi
+
+        log "Proxy infrastructure is running"
+        log "Backend servers should be managed separately on their respective hosts"
+
+        # Skip the rolling update section for normal deployments
+        log "=== Proxy deployment completed successfully ==="
+        log "NGINX proxy is ready to handle requests to external backend servers"
+        log "Backend servers listed in nginx/servers.conf should be updated independently"
+        return 0
     fi
 
-    # Check if services are running
-    if ! docker-compose $COMPOSE_FILE ps | grep -q "Up"; then
-        log "ERROR: Some services are not running. Please start the stack first."
-        exit 1
-    fi
-
-    # Update each server (skip for HA setup mode)
-    if [ "$IS_HA" != true ]; then
+    # Update each server (only for test mode now)
+    if [ "$IS_TEST" = true ]; then
         for server in "${CURRENT_SERVERS[@]}"; do
             log "=== Updating $server ==="
 
@@ -305,8 +328,9 @@ main() {
         log ""
         log "Run 'docker-compose -f docker-compose.yml -f docker-compose.ha.yml down' to cleanup"
     else
-        log "=== Deployment completed successfully ==="
-        log "All servers have been updated to version: $VERSION"
+        log "=== Proxy deployment completed successfully ==="
+        log "NGINX proxy is ready to handle requests to external backend servers"
+        log "Backend servers listed in nginx/servers.conf should be updated independently"
     fi
 }
 

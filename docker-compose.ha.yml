@@ -1,3 +1,4 @@
+# High Availability (HA) configuration - WIP and probably won't need
 include:
   - docker-compose.yml
 
