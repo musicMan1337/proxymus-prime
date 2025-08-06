@@ -2,15 +2,11 @@
 # Copy this to servers.conf and modify for your environment
 
 # Production servers
-server prod-backend-1.example.com:80 max_fails=3 fail_timeout=30s weight=2;
-server prod-backend-2.example.com:80 max_fails=3 fail_timeout=30s weight=2;
-server prod-backend-3.example.com:80 max_fails=3 fail_timeout=30s weight=1;
-
-# Development servers
-# server dev-backend-1:8080 max_fails=1 fail_timeout=10s;
-# server dev-backend-2:8080 max_fails=1 fail_timeout=10s;
+# server 192.168.1.201:80 max_fails=3 fail_timeout=30s;
+# server 192.168.1.202:80 max_fails=3 fail_timeout=30s;
+# server 192.168.1.203:80 max_fails=3 fail_timeout=30s;
 
 # Local Docker test containers
-# server backend_server_1:80 max_fails=3 fail_timeout=30s;
-# server backend_server_2:80 max_fails=3 fail_timeout=30s;
-# server backend_server_3:80 max_fails=3 fail_timeout=30s;
+server backend_server_1:80 max_fails=3 fail_timeout=30s;
+server backend_server_2:80 max_fails=3 fail_timeout=30s;
+server backend_server_3:80 max_fails=3 fail_timeout=30s;

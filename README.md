@@ -18,12 +18,12 @@ A proof of concept for a generic NGINX load balancer with Redis session manageme
 ## Architecture
 
 ```
-[Client] → [NGINX Proxy (HTTPS)] → [Redis] → [Backend Servers]
-                ↓
-         Session Management
-         Load Balancing
-         Health Checks
-         SSL Termination
+[Client] → [NGINX Proxy (HTTPS)] → [Backend Servers]
+            ↓       ↓ ↑
+            ↓     [Redis] (Session Management)
+            Load Balancing
+            Health Checks
+            SSL Termination
 ```
 
 ## Quick Start
@@ -31,8 +31,8 @@ A proof of concept for a generic NGINX load balancer with Redis session manageme
 1. **Clone and Setup**
 
    ```bash
-   git clone <this-repo>
-   cd nginx-redis-proxy
+   git clone https://github.com/musicMan1337/proxymus-prime.git
+   cd proxymus-prime
 
    # Create required configuration files
    cp .env.example .env
@@ -51,11 +51,11 @@ A proof of concept for a generic NGINX load balancer with Redis session manageme
 3. **Start the Proxy Infrastructure**
 
    ```bash
-   # Production deployment (proxy only)
-   ./deploy.sh v1.0.0
-
    # Test deployment (with test backends)
    ./deploy.sh test
+
+   # Production deployment (proxy only)
+   ./deploy.sh v1.0.0
 
    # High Availability deployment (experimental)
    ./deploy.sh ha
@@ -67,16 +67,21 @@ A proof of concept for a generic NGINX load balancer with Redis session manageme
    # Check if all services are running
    docker-compose ps
 
-   # Test load balancer (redirects to HTTPS)
-   curl http://localhost/
+   # Test HTTPS
+   curl -k https://localhost
 
-   # Test HTTPS load balancer
-   curl -k https://localhost/
+   # Test redirect
+   curl -k -L http://localhost
+
+   # Test load balancer - should cycle through each server
+   for i in {1..5}; do curl -s -k https://localhost | jq -r .server_id; done
 
    # Test session management
    curl -k -X POST https://localhost/session \
         -H "Content-Type: application/json" \
         -d '{"username": "test", "data": "session_data"}'
+
+   curl -k https://localhost/session
    ```
 
 ## Deployment Modes
@@ -84,7 +89,7 @@ A proof of concept for a generic NGINX load balancer with Redis session manageme
 ### Production Mode (Default)
 
 ```bash
-./deploy.sh v1.0.0
+./deploy.sh v25.01.001
 ```
 
 - Starts only NGINX proxy and Redis
@@ -101,7 +106,7 @@ A proof of concept for a generic NGINX load balancer with Redis session manageme
 - Direct access to backends on ports 8081-8083
 - Perfect for development and testing
 
-### High Availability Mode (Experimental)
+### High Availability Mode (WIP/Experimental)
 
 ```bash
 ./deploy.sh ha
@@ -186,8 +191,8 @@ RATE_LIMIT_BURST=20
 
 ```nginx
 # Production servers
-server prod-backend-1.example.com:80 max_fails=3 fail_timeout=30s weight=2;
-server prod-backend-2.example.com:80 max_fails=3 fail_timeout=30s weight=2;
+server 192.168.1.201:80 max_fails=3 fail_timeout=30s;
+server 192.168.1.202:80 max_fails=3 fail_timeout=30s;
 
 # Development servers
 server dev-backend-1:8080 max_fails=1 fail_timeout=10s;
@@ -213,7 +218,7 @@ Performs zero-downtime rolling updates of test backend containers.
 
 Backend servers should be updated independently on their respective hosts. The proxy infrastructure remains running and will automatically detect healthy/unhealthy backends.
 
-## High Availability (Experimental)
+## High Availability (WIP/Experimental)
 
 ### Setup
 

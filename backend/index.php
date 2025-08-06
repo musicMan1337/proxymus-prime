@@ -7,18 +7,6 @@ header('Content-Type: application/json');
 $serverId = $_ENV['SERVER_ID'] ?? 'unknown';
 $redisHost = $_ENV['REDIS_HOST'] ?? 'redis';
 
-// Function to connect to Redis
-function connectRedis($host = 'redis', $port = 6379)
-{
-    try {
-        $redis = new Redis();
-        $redis->connect($host, $port);
-        return $redis;
-    } catch (Exception $e) {
-        return null;
-    }
-}
-
 // Get session data from NGINX headers
 $sessionId = $_SERVER['HTTP_X_SESSION_ID'] ?? null;
 $sessionData = $_SERVER['HTTP_X_SESSION_DATA'] ?? null;
