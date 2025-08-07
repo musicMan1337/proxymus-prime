@@ -2,6 +2,11 @@
 
 set -e
 
+# Load environment variables
+if [ -f .env ]; then
+    export $(grep -v '^#' .env | xargs)
+fi
+
 VERSION=${1:-"latest"}
 RESTART=${2:-"false"}
 SERVERS=("backend1" "backend2" "backend3")
@@ -189,7 +194,7 @@ main() {
         # Create proxy network if it doesn't exist
         if ! docker network ls | grep -q proxy_network; then
             log "Creating proxy_network..."
-            docker network create proxy_network
+            # docker network create proxy_network
         fi
 
         # Start the entire test environment
@@ -310,19 +315,19 @@ main() {
     if [ "$IS_TEST" = true ]; then
         log "=== Test deployment completed successfully ==="
         log "Test environment is running:"
-        log "- Load balancer: http://localhost"
-        log "- Redis: localhost:6379"
+        log "- Load balancer: http://localhost:${HTTP_PORT:-80}"
+        log "- Redis: localhost:${REDIS_PORT:-6379}"
         log "- Direct test server access:"
-        log "  - backend1: http://localhost:8081"
-        log "  - backend2: http://localhost:8082"
-        log "  - backend3: http://localhost:8083"
+        log "  - backend1: http://localhost:${BACKEND1_PORT:-8081}"
+        log "  - backend2: http://localhost:${BACKEND2_PORT:-8082}"
+        log "  - backend3: http://localhost:${BACKEND3_PORT:-8083}"
         log ""
         log "Run 'docker-compose -f docker-compose.yml -f docker-compose.test.yml down' to cleanup"
     elif [ "$IS_HA" = true ]; then
         log "=== HA deployment completed successfully ==="
         log "High Availability environment is running:"
-        log "- Load balancer: http://localhost (and VIP if configured)"
-        log "- Redis: localhost:6379"
+        log "- Load balancer: http://localhost:${HTTP_PORT:-80} (and VIP if configured)"
+        log "- Redis: localhost:${REDIS_PORT:-6379}"
         log "- Redis Sentinel: localhost:26379"
         log "- HA Status: docker-compose -f docker-compose.yml -f docker-compose.ha.yml ps"
         log ""
@@ -345,3 +350,6 @@ if [ "$#" -eq 0 ]; then
 fi
 
 main "$@"
+
+
+
