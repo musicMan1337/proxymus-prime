@@ -274,8 +274,11 @@ docker-compose logs -f redis
 # Check status
 docker-compose ps
 
-# Restart services
-./deploy.sh v1.0.0 true
+# Restart services - any value except "down"
+./deploy.sh test true
+
+# Stop services
+./deploy.sh test down
 ```
 
 ## Development
