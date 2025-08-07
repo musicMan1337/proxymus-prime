@@ -1,20 +1,24 @@
 local redis = require "resty.redis"
 local cjson = require "cjson"
 
+local redis_timeout = os.getenv("REDIS_TIMEOUT") or 1000
+local redis_host = os.getenv("REDIS_HOST") or "redis"
+local redis_port = os.getenv("REDIS_PORT") or 6379
+local redis_password = os.getenv("REDIS_PASSWORD") or ""
+
 -------------------------------------------
 -- Redis helpers
 -------------------------------------------
 local function connect_redis()
     local red = redis:new()
-    red:set_timeout(1000) -- 1 second
+    red:set_timeout(redis_timeout) -- 1 second
 
-    local ok, err = red:connect("redis", 6379)
+    local ok, err = red:connect(redis_host, redis_port)
     if not ok then
         ngx.log(ngx.ERR, "Failed to connect to Redis: ", err)
         return nil, err
     end
 
-    local redis_password = os.getenv("REDIS_PASSWORD")
     if redis_password then
         local res, err = red:auth(redis_password)
         if not res then

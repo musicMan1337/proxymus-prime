@@ -29,8 +29,6 @@ else
     COMPOSE_FILE="-f docker-compose.yml"
 fi
 
-DOCKER_COMPOSE_CMD="MSYS_NO_PATHCONV=1 docker-compose $COMPOSE_FILE"
-
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
 }
@@ -178,7 +176,7 @@ deploy_test() {
     log "  - backend2: http://localhost:${BACKEND2_PORT:-8082}"
     log "  - backend3: http://localhost:${BACKEND3_PORT:-8083}"
     log ""
-    log "Run 'docker-compose -f docker-compose.yml -f docker-compose.test.yml down' to cleanup"
+    log "Run 'bash deploy.sh test down' to cleanup"
     exit 0
 }
 
@@ -234,7 +232,7 @@ deploy_ha() {
     log "- Redis Sentinel: localhost:26379"
     log "- HA Status: docker-compose -f docker-compose.yml -f docker-compose.ha.yml ps"
     log ""
-    log "Run 'docker-compose -f docker-compose.yml -f docker-compose.ha.yml down' to cleanup"
+    log "Run 'bash deploy.sh ha down' to cleanup"
     exit 0
 }
 
@@ -300,6 +298,3 @@ elif [ "$IS_HA" = true ]; then
 else
     deploy_proxy
 fi
-
-
-
