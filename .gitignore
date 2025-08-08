@@ -1,8 +1,9 @@
 # Environment and secrets
 .env
-nginx/nginx.conf
 logs/
+nginx/nginx.conf
 keepalived/keepalived.conf
+redis/redis.conf
 redis/dump.rdb
 redis/appendonly.aof
 cookies*
