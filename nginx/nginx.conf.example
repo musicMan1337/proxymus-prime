@@ -13,12 +13,17 @@ http {
     include /etc/nginx/mime.types;
     default_type application/octet-stream;
 
-    # Include real IP settings if file exists (for testing)
-    include /etc/nginx/realip.test.conf;
+    # Trust X-Forwarded-For from local Docker network for testing
+    # Remove in production!
+    # set_real_ip_from 172.16.0.0/12;
+    # set_real_ip_from 192.168.0.0/16;
+    # set_real_ip_from 10.0.0.0/8;
+    # real_ip_header X-Forwarded-For;
+    # real_ip_recursive on;
 
     # Rate limiting zones
-    limit_req_zone $binary_remote_addr zone=general:10m rate=${RATE_LIMIT_PER_IP}r/s;
-    limit_req_zone $binary_remote_addr zone=api:10m rate=${RATE_LIMIT_API_PER_IP}r/s;
+    limit_req_zone $binary_remote_addr zone=general:10m rate=50r/s;
+    limit_req_zone $binary_remote_addr zone=api:10m rate=25r/s;
 
     # DNS resolver for Docker internal DNS
     resolver 127.0.0.11 valid=30s;
@@ -56,7 +61,11 @@ http {
     upstream backend_servers {
         least_conn;
         keepalive 32;
-        include /etc/nginx/servers.conf;
+
+        # Test servers - use real IP addresses in production
+        server backend_server_1:80 max_fails=3 fail_timeout=30s;
+        server backend_server_2:80 max_fails=3 fail_timeout=30s;
+        server backend_server_3:80 max_fails=3 fail_timeout=30s;
     }
 
     # HTTP server - redirect to HTTPS
@@ -66,7 +75,7 @@ http {
 
         # Health check can stay on HTTP
         location /proxy-health {
-            limit_req zone=api burst=${RATE_LIMIT_API_BURST} nodelay;
+            limit_req zone=api burst=20 nodelay;
 
             access_log off;
             return 200 "healthy\n";
@@ -83,7 +92,7 @@ http {
     server {
         listen 443 ssl;
         http2 on;
-        server_name ${PROXY_SERVER_NAME:-_};
+        server_name _;
 
         # SSL certificates
         ssl_certificate /etc/nginx/ssl/server.crt;
@@ -91,7 +100,7 @@ http {
 
         # Health check endpoint
         location /proxy-health {
-            limit_req zone=api burst=${RATE_LIMIT_API_BURST} nodelay;
+            limit_req zone=api burst=20 nodelay;
 
             access_log off;
             return 200 "healthy\n";
@@ -100,7 +109,7 @@ http {
 
         # Main proxy location
         location / {
-            limit_req zone=general burst=${RATE_LIMIT_BURST} nodelay;
+            limit_req zone=general burst=50 nodelay;
 
             # Proxy settings
             proxy_pass http://backend_servers;
