@@ -5,5 +5,10 @@
     "Lua.runtime.version": "LuaJIT",
     "Lua.diagnostics.globals": [
         "ngx"
+    ],
+    "python.analysis.extraPaths": [
+        "./tests",
+        "./tests/suites",
+        "./tests/scripts"
     ]
 }

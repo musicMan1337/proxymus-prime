@@ -47,3 +47,17 @@ services:
         limits:
           memory: ${PROXY_MEMORY_LIMIT:-512M}
           cpus: ${PROXY_CPU_LIMIT:-1.0}
+
+  test_backend:
+    build:
+      context: ./tests/backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./tests/backend:/var/www/html
+    env_file:
+      - .env
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"

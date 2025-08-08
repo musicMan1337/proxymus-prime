@@ -24,7 +24,8 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($path) {
     case '/':
-    case '/info':
+        touchSession($serverId);
+
         // Basic server info with session data
         echo json_encode([
             'server_id' => $serverId,
@@ -43,6 +44,7 @@ switch ($path) {
         break;
 
     case '/session':
+        touchSession($serverId);
         handleSession($serverId);
         break;
 
@@ -54,10 +56,35 @@ switch ($path) {
         handleLogout($serverId);
         break;
 
-    default:
+    case '/echo':
+        // Echo endpoint for testing request forwarding
+        $body = file_get_contents('php://input');
+        echo json_encode([
+            'method' => $method,
+            'body' => $body,
+            'server_id' => $serverId,
+            'headers' => getallheaders()
+        ], JSON_PRETTY_PRINT);
+        break;
+
+    case '/nonexistent':
+        // Explicit 404 for testing
         http_response_code(404);
         echo json_encode(['error' => 'Endpoint not found']);
         break;
+
+    default:
+        // For unknown paths, return 404 instead of 200
+        http_response_code(404);
+        echo json_encode(['error' => 'Endpoint not found']);
+        break;
+}
+
+function touchSession($serverId)
+{
+    $_SESSION['counter'] = ($_SESSION['counter'] ?? 0) + 1;
+    $_SESSION['last_access'] = time();
+    $_SESSION['server_id'] = $serverId;
 }
 
 function handleSession($serverId)
@@ -75,7 +102,6 @@ function handleSession($serverId)
         }
 
         $_SESSION['last_updated'] = time();
-        $_SESSION['server_id'] = $serverId;
 
         echo json_encode([
             'session_id' => session_id(),
@@ -142,11 +168,4 @@ function handleLogout($serverId)
             'server_id' => $serverId
         ]);
     }
-}
-
-// Add visit counter to demonstrate session persistence
-if ($path === '/') {
-    $_SESSION['visit_count'] = ($_SESSION['visit_count'] ?? 0) + 1;
-    $_SESSION['last_visit'] = time();
-    $_SESSION['server_id'] = $serverId;
 }

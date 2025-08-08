@@ -1,6 +1,8 @@
 # Environment and secrets
 .env
+nginx/nginx.conf
 nginx/servers.conf
+nginx/realip.test.conf
 logs/
 keepalived/keepalived.conf
 redis/dump.rdb
@@ -8,4 +10,5 @@ redis/appendonly.aof
 cookies*
 __pycache__
 tests/report.html
+tests/results/
 ssl/

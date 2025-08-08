@@ -19,52 +19,40 @@ services:
 
   # Example backend servers (for testing)
   backend1:
-    build:
-      context: ./tests/backend
-      dockerfile: Dockerfile
+    extends:
+      service: test_backend
+      file: docker-compose.services.yml
     container_name: backend_server_1
     ports:
       - "${BACKEND1_PORT:-8081}:80"
-    volumes:
-      - ./tests/backend:/var/www/html
     networks:
       - proxy_network
     environment:
       - SERVER_ID=server1
-    env_file:
-      - .env
 
   backend2:
-    build:
-      context: ./tests/backend
-      dockerfile: Dockerfile
+    extends:
+      service: test_backend
+      file: docker-compose.services.yml
     container_name: backend_server_2
     ports:
       - "${BACKEND2_PORT:-8082}:80"
-    volumes:
-      - ./tests/backend:/var/www/html
     networks:
       - proxy_network
     environment:
       - SERVER_ID=server2
-    env_file:
-      - .env
 
   backend3:
-    build:
-      context: ./tests/backend
-      dockerfile: Dockerfile
+    extends:
+      service: test_backend
+      file: docker-compose.services.yml
     container_name: backend_server_3
     ports:
       - "${BACKEND3_PORT:-8083}:80"
-    volumes:
-      - ./tests/backend:/var/www/html
     networks:
       - proxy_network
     environment:
       - SERVER_ID=server3
-    env_file:
-      - .env
 
 networks:
   proxy_network:

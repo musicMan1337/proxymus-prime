@@ -5,7 +5,7 @@ set -e  # Exit on any error
 # Setup Python environment if needed
 if [[ "$VIRTUAL_ENV" == "" ]]; then
     echo "Setting up Python environment..."
-    source tests/setup_env.sh
+    source tests/scripts/setup_env.sh
 fi
 
 # Verify we're in virtual environment
@@ -33,7 +33,7 @@ trap cleanup EXIT
 # Run tests (disable set -e temporarily so cleanup always runs)
 set +e
 echo "Running full test suite with HTML report..."
-python -m pytest tests/test_proxy.py -v --html=tests/report.html --self-contained-html
+python -m pytest tests/suites/test_proxy.py -v --html=tests/report.html --self-contained-html
 TEST_EXIT_CODE=$?
 set -e
 
