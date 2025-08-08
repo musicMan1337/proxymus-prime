@@ -18,13 +18,12 @@ echo "Using Python environment: $VIRTUAL_ENV"
 echo "Python version: $(python --version)"
 
 # Start test environment
-echo "Starting test environment..."
+echo "Starting test containers..."
 docker-compose -f docker-compose.test.yml up -d
-sleep 30
 
 # Function to cleanup on exit
 cleanup() {
-    echo "Cleaning up test environment..."
+    echo "Cleaning up test containers..."
     docker-compose -f docker-compose.test.yml down
 }
 

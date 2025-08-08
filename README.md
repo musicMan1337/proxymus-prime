@@ -182,7 +182,7 @@ python -m pytest tests/test_proxy.py -v
 
 ```bash
 # Port Configuration
-HTTP_PORT=8080          # HTTP port (default: 80)
+HTTP_PORT=80            # HTTP port (default: 80)
 HTTPS_PORT=8443         # HTTPS port (default: 443)
 REDIS_PORT=6379         # Redis port (default: 6379)
 
@@ -191,11 +191,8 @@ BACKEND1_PORT=8081      # Backend 1 direct access
 BACKEND2_PORT=8082      # Backend 2 direct access
 BACKEND3_PORT=8083      # Backend 3 direct access
 
-# Redis and Session
+# Redis
 REDIS_PASSWORD=your_secure_redis_password_here
-SESSION_TIMEOUT=86400
-RATE_LIMIT_PER_IP=10
-RATE_LIMIT_BURST=20
 ```
 
 ### Backend Servers (`nginx/servers.conf`)

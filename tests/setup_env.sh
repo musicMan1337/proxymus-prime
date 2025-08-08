@@ -7,6 +7,15 @@ PYTHON_CMD="python3"
 
 echo "Setting up Python test environment..."
 
+# Load environment variables
+if [[ -f ".env" ]]; then
+    export $(grep -v '^#' .env | xargs)
+    echo "✅ Loaded environment variables from .env"
+else
+    echo "⚠️  No .env file found, using defaults"
+    export REDIS_PASSWORD="your_secure_redis_password_here"
+fi
+
 # Check if Python 3 is available
 if ! command -v $PYTHON_CMD &> /dev/null; then
     echo "ERROR: $PYTHON_CMD is not installed or not in PATH"

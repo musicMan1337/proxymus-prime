@@ -1,63 +1,19 @@
 services:
-  # Redis for session storage
+  nginx_proxy:
+    extends:
+      service: nginx_proxy_base
+      file: docker-compose.services.yml
+    networks:
+      - proxy_network
+
   redis:
-    image: redis:7-alpine
-    container_name: redis
-    command: redis-server --port 6379 --requirepass ${REDIS_PASSWORD} --appendonly yes
-    env_file:
-      - .env
+    extends:
+      service: redis_base
+      file: docker-compose.services.yml
     volumes:
       - redis_data:/data
     networks:
       - proxy_network
-    read_only: true
-    tmpfs:
-      - /tmp
-    security_opt:
-      - no-new-privileges:true
-    user: "999:999" # redis user
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-          cpus: "0.5"
-
-  # NGINX Load Balancer/Proxy
-  nginx_proxy:
-    image: openresty/openresty:alpine
-    container_name: nginx_proxy
-    ports:
-      - "${HTTP_PORT:-80}:80"
-      - "${HTTPS_PORT:-443}:443"
-    volumes:
-      - ./nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
-      - ./nginx/lua:/etc/nginx/lua:ro
-      - ./nginx/servers.conf:/etc/nginx/servers.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-    networks:
-      - proxy_network
-    env_file:
-      - .env
-    read_only: true
-    tmpfs:
-      - /tmp
-      - /var/run
-      - /var/cache/nginx
-      - /var/log/nginx
-      - /usr/local/openresty/nginx/client_body_temp
-      - /usr/local/openresty/nginx/proxy_temp
-      - /usr/local/openresty/nginx/fastcgi_temp
-      - /usr/local/openresty/nginx/uwsgi_temp
-      - /usr/local/openresty/nginx/scgi_temp
-    security_opt:
-      - no-new-privileges:true
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-          cpus: "1.0"
-    depends_on:
-      - redis
 
 volumes:
   redis_data:

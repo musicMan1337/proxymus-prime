@@ -1,0 +1,49 @@
+services:
+  redis_base:
+    image: redis:7-alpine
+    container_name: ${REDIS_HOST:-redis}
+    command: redis-server --port ${REDIS_PORT:-6379} --requirepass ${REDIS_PASSWORD} --appendonly yes
+    env_file:
+      - .env
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    user: "999:999" # redis user
+    deploy:
+      resources:
+        limits:
+          memory: ${REDIS_MEMORY_LIMIT:-1G}
+          cpus: ${REDIS_CPU_LIMIT:-1.0}
+
+  nginx_proxy_base:
+    image: nginx:alpine
+    container_name: nginx_proxy
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/servers.conf:/etc/nginx/servers.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    env_file:
+      - .env
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run
+      - /var/cache/nginx
+      - /var/log/nginx
+      - /var/lib/nginx/body
+      - /var/lib/nginx/fastcgi
+      - /var/lib/nginx/proxy
+      - /var/lib/nginx/scgi
+      - /var/lib/nginx/uwsgi
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: ${PROXY_MEMORY_LIMIT:-512M}
+          cpus: ${PROXY_CPU_LIMIT:-1.0}

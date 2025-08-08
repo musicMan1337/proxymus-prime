@@ -9,6 +9,7 @@ fi
 
 VERSION=${1:-"latest"}
 RESTART=${2:-""} # Optional: "down" to stop services only
+NO_CACHE=${3:-""} # Optional: "no-cache" for --no-cache build
 SERVERS=("backend1" "backend2" "backend3")
 TEST_SERVERS=("backend1" "backend2" "backend3")
 HEALTH_CHECK_RETRIES=10
@@ -33,8 +34,24 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
 }
 
+if [ "$RESTART" = "no-cache" ]; then
+    log "Forcing rebuild of images..."
+    RESTART=""
+    NO_CACHE=true
+fi
+
+if [ -n "$NO_CACHE" ]; then
+    NO_CACHE=true
+fi
+
 docker_compose() {
     MSYS_NO_PATHCONV=1 docker-compose $COMPOSE_FILE "$@"
+}
+
+docker_build_no_cache() {
+    if [ "$NO_CACHE" = true ]; then
+        docker_compose build --no-cache "$@"
+    fi
 }
 
 # Restart mode
@@ -50,6 +67,8 @@ if [ -n "$RESTART" ]; then
         log "ERROR: Failed to stop services"
         exit 1
     fi
+
+    docker_build_no_cache
 
     if docker_compose up -d --remove-orphans; then
         log "✓ Reloaded nginx configuration"
@@ -140,6 +159,7 @@ deploy_test() {
 
     # Start the entire test environment
     log "Starting complete test environment..."
+    docker_build_no_cache
     docker_compose up -d --remove-orphans
 
     # Wait for services to initialize
@@ -192,6 +212,7 @@ deploy_ha() {
 
     # Start HA environment
     log "Starting HA environment (redis, nginx_proxy, sentinel, keepalived)..."
+    docker_build_no_cache
     docker_compose up -d --remove-orphans
 
     # Wait longer for HA services to initialize
@@ -241,6 +262,7 @@ deploy_proxy() {
 
     # For normal deployments, only manage the proxy infrastructure
     log "Starting proxy infrastructure..."
+    docker_build_no_cache
     docker_compose up -d --remove-orphans
 
     # Wait for services to initialize
