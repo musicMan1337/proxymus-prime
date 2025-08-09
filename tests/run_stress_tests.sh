@@ -1,17 +1,20 @@
 #!/bin/bash
 
 # Usage: ./run_stress_tests.sh <test_type> <duration> <scenario>
-# test_type: stress, monitor, combined, custom, all (default all)
+# test_type:
+#   stress: Run stress tests only
+#   monitor: Monitor resources only (for manual testing)
+#   all (default): Run all tests with monitoring
 # duration: in seconds (default 300)
-# scenario: light, medium, heavy, peak, extreme (for custom only)
+# scenario: light, medium, heavy, peak, extreme, stress, breaking,
+#           sustained, high_sustained, breaking, limit, overload
+#           (Can specify multiple scenarios comma-separated)
 
 # Examples:
 # bash tests/run_stress_tests.sh
-# bash tests/run_stress_tests.sh stress
+# bash tests/run_stress_tests.sh stress 300
 # bash tests/run_stress_tests.sh monitor 600
-# bash tests/run_stress_tests.sh combined 300
-# bash tests/run_stress_tests.sh custom 300 heavy
-# bash tests/run_stress_tests.sh all 300
+# bash tests/run_stress_tests.sh all 300 "light,medium,heavy"
 
 set -e  # Exit on any error
 
@@ -35,7 +38,7 @@ if ! docker-compose -f docker-compose.test.yml ps | grep -q "Up"; then
     echo "Starting test containers..."
     docker-compose -f docker-compose.test.yml up -d
     echo "Waiting for services to stabilize..."
-    sleep 5
+    sleep 2
 else
     echo "Test containers already running"
 fi
@@ -65,37 +68,29 @@ trap cleanup EXIT INT TERM
 # Parse command line arguments
 TEST_TYPE=${1:-"all"}
 DURATION=${2:-300}  # Default 5 minutes monitoring
-SCENARIO=${3:-""}   # Optional specific scenario
+SCENARIO=${3:-""}   # Optional specific scenario or test levels
 
 case $TEST_TYPE in
     "stress")
         echo "Running stress tests..."
-        python tests/stress_test.py
+        if [[ -n "$SCENARIO" ]]; then
+            python tests/suites/stress_test.py --levels "$SCENARIO"
+        else
+            python tests/suites/stress_test.py
+        fi
         ;;
     "monitor")
         echo "Running resource monitoring for ${DURATION} seconds..."
         python tests/scripts/monitor_resources.py --duration $DURATION
         ;;
-    "combined")
-        echo "Running combined stress test with monitoring..."
-        python tests/scripts/combined_stress_monitor.py $DURATION &
-        MONITOR_PID=$!
-        wait $MONITOR_PID
-        ;;
-    "custom")
-        if [[ -z "$SCENARIO" ]]; then
-            echo "ERROR: Custom scenario required"
-            echo "Usage: $0 custom <duration> <scenario_name>"
-            echo "Available scenarios: light, medium, heavy, peak, extreme"
-            exit 1
-        fi
-
-        echo "Running custom scenario: $SCENARIO"
-        python tests/scripts/custom_scenario.py $SCENARIO
-        ;;
     "all"|*)
         echo "Running full stress test suite with monitoring..."
-        python tests/scripts/full_stress_monitor.py $DURATION &
+        if [[ -n "$SCENARIO" ]]; then
+            echo "Running specific scenarios: $SCENARIO"
+            python tests/scripts/full_stress_monitor.py $DURATION --levels "$SCENARIO" &
+        else
+            python tests/scripts/full_stress_monitor.py $DURATION &
+        fi
         MONITOR_PID=$!
         wait $MONITOR_PID
         ;;

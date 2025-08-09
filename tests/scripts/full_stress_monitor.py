@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-import os
+import argparse
 sys.path.append('tests')
 sys.path.append('tests/suites')
 
@@ -8,20 +8,22 @@ from monitor_resources import ResourceMonitor
 from stress_test import run_stress_tests
 import threading
 import time
-import json
 
 def main():
-    duration = int(sys.argv[1]) if len(sys.argv) > 1 else 300
+    parser = argparse.ArgumentParser(description='Run full stress test with monitoring')
+    parser.add_argument('duration', type=int, nargs='?', default=300, help='Monitoring duration in seconds')
+    parser.add_argument('--levels', help='Comma-separated test levels to run')
+    args = parser.parse_args()
 
     monitor = ResourceMonitor()
-    monitor_thread = threading.Thread(target=monitor.start_monitoring, args=(duration, 1))
+    monitor_thread = threading.Thread(target=monitor.start_monitoring, args=(args.duration, 1))
     monitor_thread.start()
 
     print('Monitoring started, waiting 5 seconds...')
     time.sleep(5)
 
-    # Run stress tests
-    run_stress_tests()
+    # Run stress tests with specified levels
+    run_stress_tests(args.levels)
 
     print('Stress tests complete, stopping monitoring...')
     monitor.stop_monitoring()

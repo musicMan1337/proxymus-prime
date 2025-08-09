@@ -3,7 +3,7 @@
 logs/
 nginx/nginx.conf
 keepalived/keepalived.conf
-redis/redis.conf
+redis/sentinel.conf
 redis/dump.rdb
 redis/appendonly.aof
 cookies*

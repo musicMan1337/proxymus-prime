@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import os
 import requests
 import concurrent.futures
 import time
@@ -8,6 +9,7 @@ import json
 from typing import Dict, List
 from requests import adapters
 import urllib3
+import argparse
 
 # Disable SSL warnings for self-signed certificates in testing
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -40,34 +42,28 @@ class StressTestRunner:
         warmup_session.close()
 
         def make_requests(user_id: int) -> List[Dict]:
+            results = []
+
             session = requests.Session()
             session.verify = self.verify_ssl
 
-            # Simulate different source IPs using X-Forwarded-For header
-            fake_ip = f"192.168.1.{100 + user_id}"
-            session.headers.update({
-                'X-Forwarded-For': fake_ip,
-                'X-Real-IP': fake_ip
-            })
-
             adapter = adapters.HTTPAdapter(
                 pool_connections=1,
-                pool_maxsize=2,
-                max_retries=adapters.Retry(
-                    total=0,
-                    backoff_factor=0.1,
-                    status_forcelist=[500, 502, 503, 504]
-                )
+                pool_maxsize=1,
+                max_retries=0
             )
-            session.mount('http://', adapter)
             session.mount('https://', adapter)
+            session.mount('http://', adapter)
 
-            results = []
+            # Mock different client IPs for proper load balancing
+            headers = {
+                'X-Forwarded-For': f"192.168.1.{(user_id % 254) + 1}"
+            }
 
             for i in range(requests_per_user):
                 start_time = time.time()
                 try:
-                    response = session.get(f"{self.base_url}{endpoint}", timeout=10)
+                    response = session.get(f"{self.base_url}{endpoint}", headers=headers, timeout=10)
                     end_time = time.time()
 
                     results.append({
@@ -91,11 +87,9 @@ class StressTestRunner:
                         'server_id': None
                     })
 
-                # Longer delay between requests
-                if i < requests_per_user - 1:
-                    time.sleep(0.2)  # 200ms between requests per user
+                finally:
+                    session.close()
 
-            session.close()
             return results
 
         print(f"Starting load test: {concurrent_users} users, {requests_per_user} requests each")
@@ -104,11 +98,8 @@ class StressTestRunner:
         with concurrent.futures.ThreadPoolExecutor(max_workers=concurrent_users) as executor:
             futures = []
 
-            # Stagger user startup to prevent thundering herd
             for i in range(concurrent_users):
                 futures.append(executor.submit(make_requests, i))
-                if i < concurrent_users - 1:
-                    time.sleep(0.05)  # 50ms between user startups
 
             all_results = []
             for future in concurrent.futures.as_completed(futures):
@@ -201,17 +192,34 @@ class StressTestRunner:
 
         return stats
 
-def run_stress_tests():
+# Test scenario definitions
+STRESS_SCENARIOS = [
+    {'users': 10, 'requests': 10, 'name': 'Light Load', 'level': 'light'},
+    {'users': 25, 'requests': 20, 'name': 'Medium Load', 'level': 'medium'},
+    {'users': 50, 'requests': 30, 'name': 'Heavy Load', 'level': 'heavy'},
+    {'users': 100, 'requests': 50, 'name': 'Peak Load', 'level': 'peak'},
+    {'users': 200, 'requests': 100, 'name': 'Sustained Load', 'level': 'sustained'},
+    {'users': 500, 'requests': 50, 'name': 'High Sustained', 'level': 'high_sustained'},
+    {'users': 1000, 'requests': 10, 'name': 'Breaking Point', 'level': 'breaking'},
+    {'users': 1500, 'requests': 5, 'name': 'System Limit', 'level': 'limit'},
+    {'users': 2000, 'requests': 3, 'name': 'Overload Test', 'level': 'overload'},
+    {'users': 3000, 'requests': 2, 'name': 'Extreme Overload', 'level': 'extreme_overload'},
+    {'users': 5000, 'requests': 1, 'name': 'Connection Limit', 'level': 'connection_limit'},
+]
+
+def run_stress_tests(test_levels=None):
     """Run comprehensive stress tests"""
     tester = StressTestRunner()
 
-    test_scenarios = [
-        {'users': 3, 'requests': 5, 'name': 'Light Load'},
-        {'users': 5, 'requests': 5, 'name': 'Medium Load'},
-        {'users': 8, 'requests': 5, 'name': 'Heavy Load'},
-        {'users': 10, 'requests': 3, 'name': 'Peak Load'},
-        {'users': 12, 'requests': 3, 'name': 'Extreme Load'},
-    ]
+    # Filter scenarios based on test_levels
+    if test_levels:
+        levels = [level.strip() for level in test_levels.split(',')]
+        test_scenarios = [s for s in STRESS_SCENARIOS if s['level'] in levels]
+        if not test_scenarios:
+            print(f"No matching test levels found. Available: {[s['level'] for s in STRESS_SCENARIOS]}")
+            return
+    else:
+        test_scenarios = STRESS_SCENARIOS
 
     results = {}
 
@@ -248,7 +256,8 @@ def run_stress_tests():
         time.sleep(5)
 
     # Save detailed results
-    with open('stress_test_results.json', 'w') as f:
+    os.makedirs('tests/results', exist_ok=True)
+    with open('tests/results/stress_test_results.json', 'w') as f:
         json.dump(results, f, indent=2)
 
     print(f"\n{'='*50}")
@@ -260,4 +269,8 @@ def run_stress_tests():
         print(f"{name:15} | Success: {lr['success_rate']:6.2%} | RPS: {lr['requests_per_second']:6.1f} | Avg: {lr['avg_response_time']:6.3f}s")
 
 if __name__ == "__main__":
-    run_stress_tests()
+    parser = argparse.ArgumentParser(description='Run stress tests')
+    parser.add_argument('--levels', help='Comma-separated test levels (light,medium,heavy,peak,extreme,stress,breaking)')
+    args = parser.parse_args()
+
+    run_stress_tests(args.levels)
