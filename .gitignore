@@ -11,3 +11,5 @@ __pycache__
 tests/report.html
 tests/results/
 ssl/
+node_modules/
+dist

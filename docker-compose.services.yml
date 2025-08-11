@@ -1,10 +1,12 @@
 services:
   redis_base:
-    image: redis:7-alpine
-    container_name: ${REDIS_HOST:-redis}
-    command: redis-server --port ${REDIS_PORT:-6379} --requirepass ${REDIS_PASSWORD} --appendonly yes
+    image: redis:alpine
+    container_name: redis
+    command: redis-server --port ${REDIS_PORT:-6379} --requirepass ${REDIS_PASSWORD} --appendonly yes --save 300 10 --logfile /var/log/redis/redis.log
     env_file:
       - .env
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
     read_only: true
     tmpfs:
       - /tmp
@@ -33,7 +35,6 @@ services:
       - /tmp
       - /var/run
       - /var/cache/nginx
-      - /var/log/nginx
       - /var/lib/nginx/body
       - /var/lib/nginx/fastcgi
       - /var/lib/nginx/proxy
@@ -47,6 +48,7 @@ services:
           memory: ${PROXY_MEMORY_LIMIT:-512M}
           cpus: ${PROXY_CPU_LIMIT:-1.0}
 
+  # Test backend server
   test_backend:
     build:
       context: ./tests/backend
@@ -60,3 +62,28 @@ services:
         limits:
           memory: 256M
           cpus: "0.5"
+
+  # Additional Services
+  splunk_local_base:
+    image: splunk/splunk:latest
+    environment:
+      SPLUNK_START_ARGS: --accept-license
+      SPLUNK_GENERAL_TERMS: --accept-sgt-current-at-splunk-com
+      SPLUNK_PASSWORD: ${SPLUNK_PASSWORD}
+    ports:
+      - "${SPLUNK_LOCAL_WEB_PORT:-8000}:8000" # Web UI
+      - "${SPLUNK_LOCAL_PORT:-9997}:9997" # Forwarder input
+    platform: linux/amd64
+
+  splunk-forwarder_base:
+    image: splunk/universalforwarder:latest
+    environment:
+      SPLUNK_START_ARGS: --accept-license
+      SPLUNK_GENERAL_TERMS: --accept-sgt-current-at-splunk-com
+      SPLUNK_FORWARD_SERVER: ${SPLUNK_FORWARD_SERVER}:9997
+      SPLUNK_PASSWORD: ${SPLUNK_PASSWORD}
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./logs:/host-logs:ro
+      - ./splunk-config:/opt/splunkforwarder/etc/apps/search/local
+    platform: linux/amd64

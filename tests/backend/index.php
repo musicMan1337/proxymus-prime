@@ -3,7 +3,7 @@
 
 // Configure PHP to use Redis for session storage
 ini_set('session.save_handler', 'redis');
-ini_set('session.save_path', 'tcp://' . ($_ENV['REDIS_HOST'] ?? 'redis') . ':' . ($_ENV['REDIS_PORT'] ?? '6379') . '?auth=' . ($_ENV['REDIS_PASSWORD'] ?? ''));
+ini_set('session.save_path', 'tcp://redis:' . ($_ENV['REDIS_PORT'] ?? '6379') . '?auth=' . ($_ENV['REDIS_PASSWORD'] ?? ''));
 ini_set('session.gc_maxlifetime', 86400); // 24 hours
 ini_set('session.cookie_lifetime', 86400);
 ini_set('session.cookie_httponly', 1);

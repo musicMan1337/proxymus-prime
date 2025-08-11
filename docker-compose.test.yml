@@ -9,6 +9,15 @@ services:
       - proxy_network
     ports:
       - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+      - ./logs/redis:/var/log/redis
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "7"
 
   nginx_proxy:
     extends:
@@ -16,6 +25,14 @@ services:
       file: docker-compose.services.yml
     networks:
       - proxy_network
+    volumes:
+      - ./logs/nginx:/var/log/nginx
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "7"
 
   # Example backend servers (for testing)
   backend1:
@@ -53,6 +70,9 @@ services:
       - proxy_network
     environment:
       - SERVER_ID=server3
+
+volumes:
+  redis-data:
 
 networks:
   proxy_network:
